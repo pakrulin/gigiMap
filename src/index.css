@@ -1,0 +1,172 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #222;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app__sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: #fafafa;
+  border-right: 1px solid #e5e5e5;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.app__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app__map {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.app__bottom {
+  background: #fff;
+  border-top: 1px solid #e5e5e5;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ——— Layer panel ——— */
+
+.layer-panel h3 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+}
+
+.layer-panel__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.layer-panel__item:hover {
+  background: #f0f0f0;
+}
+
+.layer-panel__color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.layer-panel__name {
+  flex: 1;
+}
+
+.layer-panel__unit {
+  color: #aaa;
+  font-size: 11px;
+}
+
+.layer-panel__loading {
+  color: #2b6cb0;
+  animation: pulse 1s infinite;
+}
+
+.layer-panel__error {
+  color: #d33;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ——— Timeline ——— */
+
+.timeline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeline__label {
+  font-size: 13px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.timeline__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.timeline__button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.timeline__button:hover {
+  background: #f0f0f0;
+}
+
+.timeline__button.is-active {
+  background: #2b6cb0;
+  border-color: #2b6cb0;
+  color: #fff;
+}
+
+/* ——— Chart ——— */
+
+.chart__title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+}
