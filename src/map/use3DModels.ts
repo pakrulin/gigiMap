@@ -43,7 +43,7 @@ export function use3DModels(map: MapLibreMap | null): void {
     const ferrisLayer = new ScenegraphLayer<ModelPoint>({
       id: 'ferris-wheel',
       data: [FERRIS_WHEEL],
-      scenegraph: '/models/ferris-wheel.glb', // строка, не функция
+      scenegraph: `${import.meta.env.BASE_URL}models/ferris-wheel.glb`,
       getPosition: (d) => [d.coordinates[0], d.coordinates[1], d.altitude],
       getOrientation: (d) => [0, d.heading, d.pitch],
       getScale: (d) => [d.scale, d.scale, d.scale],
@@ -55,7 +55,7 @@ export function use3DModels(map: MapLibreMap | null): void {
     const leninLayer = new ScenegraphLayer<ModelPoint>({
       id: 'lenin-statue',
       data: [LENIN],
-      scenegraph: '/models/lenin.glb',
+      scenegraph: `${import.meta.env.BASE_URL}models/lenin.glb`,
       getPosition: (d) => [d.coordinates[0], d.coordinates[1], d.altitude],
       getOrientation: (d) => [0, d.heading, d.pitch],
       getScale: (d) => [d.scale, d.scale, d.scale],

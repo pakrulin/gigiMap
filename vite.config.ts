@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/gigiMap/',
 
   // 1. Не пре-бандлить maplibre-gl — иначе воркер не найдётся в dev-режиме
   optimizeDeps: {
