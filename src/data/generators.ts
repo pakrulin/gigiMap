@@ -1,9 +1,13 @@
 import type { LayerId, LayerDataPoint } from './types';
+import { KG_BBOX, isInsideKyrgyzstan } from './kgBoundary';
 
-// Бишкек
+// Бишкек — центр «теплового острова»
 const CENTER: [number, number] = [74.5698, 42.8746];
-const GRID = 75;
-const STEP = 0.028; // ~50×35 км, покрывает Бишкек и ближние пригороды
+export const GRID_STEP = 0.05;
+
+// Масштаб нормализации координат для формул полей (в градусах)
+const SCALE_X = 3;
+const SCALE_Y = 2;
 
 export function generatePoints(
   layerId: LayerId,
@@ -13,13 +17,12 @@ export function generatePoints(
   const hours = date.getHours() + date.getMinutes() / 60;
   const points: LayerDataPoint[] = [];
 
-  const half = (GRID - 1) / 2;
-
-  for (let i = 0; i < GRID; i++) {
-    for (let j = 0; j < GRID; j++) {
-      const lng = CENTER[0] + (i - half) * STEP;
-      const lat = CENTER[1] + (j - half) * STEP;
-      const value = computeValue(layerId, i, j, hours, half);
+  // Сетка по bounding box страны, точки только внутри границы —
+  // поле повторяет форму Кыргызстана
+  for (let lng = KG_BBOX.minLng; lng <= KG_BBOX.maxLng; lng += GRID_STEP) {
+    for (let lat = KG_BBOX.minLat; lat <= KG_BBOX.maxLat; lat += GRID_STEP) {
+      if (!isInsideKyrgyzstan(lng, lat)) continue;
+      const value = computeValue(layerId, lng, lat, hours);
       points.push({ coordinates: [lng, lat], value });
     }
   }
@@ -28,14 +31,13 @@ export function generatePoints(
 
 function computeValue(
   layerId: LayerId,
-  i: number,
-  j: number,
-  hours: number,
-  half: number
+  lng: number,
+  lat: number,
+  hours: number
 ): number {
-  // Нормализованные координаты в диапазоне [-1, 1] — удобно для формул
-  const nx = (i - half) / half;
-  const ny = (j - half) / half;
+  // Нормализованные координаты относительно Бишкека — удобно для формул
+  const nx = (lng - CENTER[0]) / SCALE_X;
+  const ny = (lat - CENTER[1]) / SCALE_Y;
   const distFromCenter = Math.sqrt(nx * nx + ny * ny);
 
   // «Тепловой остров» в центре города: гауссов пик
@@ -49,7 +51,7 @@ function computeValue(
     case 'temperature': {
       // Базовый суточный ход: холодно утром, тепло после полудня
       const diurnal = 15 + 12 * Math.sin(((hours - 6) * Math.PI) / 12);
-      // +2° в городе, ±2° рельефные колебания
+      // +4° в городе, ±2° рельефные колебания
       const value = diurnal + heatIsland * 4 + (wave1 + wave2) * 2;
       return round1(value);
     }

@@ -8,6 +8,7 @@ export interface AppState {
   layerDataCache: Record<LayerId, Record<number, LayerData>>;
   loading: Record<LayerId, boolean>;
   errors: Record<LayerId, string | null>;
+  layerOpacity: Record<LayerId, number>;
 }
 
 function buildTimePoints(
@@ -45,6 +46,8 @@ const initialState: AppState = {
   layerDataCache: { temperature: {}, wind: {}, insolation: {} },
   loading: { temperature: false, wind: false, insolation: false },
   errors: { temperature: null, wind: null, insolation: null },
+  // Все слои рисуются polygon-стратегией, дефолт — полная непрозрачность
+  layerOpacity: { temperature: 1, wind: 1, insolation: 1 },
 };
 
 export const {

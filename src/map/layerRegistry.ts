@@ -6,14 +6,14 @@ export const LAYER_REGISTRY: Record<LayerId, LayerConfig> = {
     name: 'Температура',
     color: '#ff6b35',
     unit: '°C',
-    renderType: 'heatmap',
+    renderType: 'polygon',
   },
   wind: {
     id: 'wind',
     name: 'Ветер',
     color: '#4a90d9',
     unit: 'м/с',
-    renderType: 'circle',
+    renderType: 'polygon',
   },
   insolation: {
     id: 'insolation',

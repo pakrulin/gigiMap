@@ -108,6 +108,26 @@ body {
   font-weight: bold;
 }
 
+.layer-panel__opacity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 6px 24px;
+}
+
+.layer-panel__opacity input[type='range'] {
+  flex: 1;
+  height: 4px;
+  cursor: pointer;
+}
+
+.layer-panel__opacity-value {
+  width: 34px;
+  text-align: right;
+  font-size: 11px;
+  color: #aaa;
+}
+
 @keyframes pulse {
   0%,
   100% {

@@ -7,7 +7,8 @@ export function syncCircles(
   map: MapLibreMap,
   config: LayerConfig,
   data: LayerData | null,
-  isActive: boolean
+  isActive: boolean,
+  opacity: number
 ): void {
   const sourceId = `${config.id}-source`;
   const layerId = `${config.id}-layer`;
@@ -29,6 +30,7 @@ export function syncCircles(
 
   if (map.getSource(sourceId)) {
     (map.getSource(sourceId) as GeoJSONSource).setData(geojson);
+    map.setPaintProperty(layerId, 'circle-opacity', opacity);
     return;
   }
 
@@ -50,7 +52,7 @@ export function syncCircles(
           14,
         ],
         'circle-color': config.color,
-        'circle-opacity': 0.7,
+        'circle-opacity': opacity,
         'circle-stroke-color': '#ffffff',
         'circle-stroke-width': 1,
       },

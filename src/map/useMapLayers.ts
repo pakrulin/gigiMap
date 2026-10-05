@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '../store/store';
 import { fetchLayerData } from '../data/mockApi';
 import { blendLayerData, easeInOutCubic } from '../data/blend';
 import { LAYER_REGISTRY, ALL_LAYER_IDS } from './layerRegistry';
-import { getStrategy } from './strategies';
+import { getStrategy, OPACITY_PAINT_PROPERTY } from './strategies';
 import type { LayerId, LayerData } from '../data/types';
 
 const TRANSITION_MS = 450;
@@ -14,6 +14,7 @@ export function useMapLayers(map: MapLibreMap | null): void {
   const selectedTimeIndex = useAppSelector((s) => s.selectedTimeIndex);
   const timePoints = useAppSelector((s) => s.timePoints);
   const layerDataCache = useAppSelector((s) => s.layerDataCache);
+  const layerOpacity = useAppSelector((s) => s.layerOpacity);
   const dispatch = useAppDispatch();
 
   const selectedTime = timePoints[selectedTimeIndex];
@@ -23,6 +24,13 @@ export function useMapLayers(map: MapLibreMap | null): void {
 
   // Какой timestamp сейчас реально нарисован на карте
   const renderedTimestampRef = useRef<number | null>(null);
+
+  // Актуальная прозрачность для чтения из эффектов без перезапуска анимации
+  const opacityRef = useRef(layerOpacity);
+
+  useEffect(() => {
+    opacityRef.current = layerOpacity;
+  }, [layerOpacity]);
 
   // ——— Загрузка данных (без изменений) ———
   useEffect(() => {
@@ -67,7 +75,6 @@ export function useMapLayers(map: MapLibreMap | null): void {
           }));
         });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTime, activeLayers, dispatch]);
 
   // ——— Отмена in-flight запросов при размонтировании (без изменений) ———
@@ -87,7 +94,13 @@ export function useMapLayers(map: MapLibreMap | null): void {
 
     // Первый рендер или повторное применение той же точки — без анимации
     if (renderedTimestamp === null || renderedTimestamp === targetTimestamp) {
-      applyAllLayers(map, activeLayers, layerDataCache, targetTimestamp);
+      applyAllLayers(
+        map,
+        activeLayers,
+        layerDataCache,
+        opacityRef.current,
+        targetTimestamp
+      );
       renderedTimestampRef.current = targetTimestamp;
       return;
     }
@@ -107,7 +120,7 @@ export function useMapLayers(map: MapLibreMap | null): void {
         const config = LAYER_REGISTRY[layerId];
         const isActive = activeLayers.includes(layerId);
         if (!isActive) {
-          getStrategy(config.renderType)(map, config, null, false);
+          getStrategy(config.renderType)(map, config, null, false, 1);
         }
       }
       return;
@@ -126,7 +139,7 @@ export function useMapLayers(map: MapLibreMap | null): void {
         const isActive = activeLayers.includes(layerId);
 
         if (!isActive) {
-          getStrategy(config.renderType)(map, config, null, false);
+          getStrategy(config.renderType)(map, config, null, false, 1);
           continue;
         }
 
@@ -134,7 +147,13 @@ export function useMapLayers(map: MapLibreMap | null): void {
         const to = layerDataCache[layerId]![targetTimestamp];
         const blended = blendLayerData(from, to, k);
 
-        getStrategy(config.renderType)(map, config, blended, true);
+        getStrategy(config.renderType)(
+          map,
+          config,
+          blended,
+          true,
+          opacityRef.current[layerId]
+        );
       }
 
       if (t < 1) {
@@ -149,6 +168,20 @@ export function useMapLayers(map: MapLibreMap | null): void {
     return () => cancelAnimationFrame(rafId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, selectedTimeIndex, activeLayers, layerDataCache, timePoints]);
+
+  // ——— Прозрачность: только paint-свойство, без setData и анимации ———
+  useEffect(() => {
+    if (!map) return;
+    for (const layerId of ALL_LAYER_IDS) {
+      const mapLayerId = `${layerId}-layer`;
+      if (!map.getLayer(mapLayerId)) continue;
+      map.setPaintProperty(
+        mapLayerId,
+        OPACITY_PAINT_PROPERTY[LAYER_REGISTRY[layerId].renderType],
+        layerOpacity[layerId]
+      );
+    }
+  }, [map, layerOpacity]);
 }
 
 // ——— Вспомогательная функция: применить данные без анимации ———
@@ -156,6 +189,7 @@ function applyAllLayers(
   map: MapLibreMap,
   activeLayers: LayerId[],
   cache: Record<LayerId, Record<number, LayerData>>,
+  opacity: Record<LayerId, number>,
   timestamp: number
 ): void {
   for (const layerId of ALL_LAYER_IDS) {
@@ -163,6 +197,12 @@ function applyAllLayers(
     const isActive = activeLayers.includes(layerId);
     const data = isActive ? (cache[layerId]?.[timestamp] ?? null) : null;
 
-    getStrategy(config.renderType)(map, config, data, isActive);
+    getStrategy(config.renderType)(
+      map,
+      config,
+      data,
+      isActive,
+      opacity[layerId]
+    );
   }
 }

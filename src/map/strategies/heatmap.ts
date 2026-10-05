@@ -7,7 +7,8 @@ export function syncHeatmap(
   map: MapLibreMap,
   config: LayerConfig,
   data: LayerData | null,
-  isActive: boolean
+  isActive: boolean,
+  opacity: number
 ): void {
   const sourceId = `${config.id}-source`;
   const layerId = `${config.id}-layer`;
@@ -29,6 +30,7 @@ export function syncHeatmap(
 
   if (map.getSource(sourceId)) {
     (map.getSource(sourceId) as GeoJSONSource).setData(geojson);
+    map.setPaintProperty(layerId, 'heatmap-opacity', opacity);
     return;
   }
 
@@ -51,7 +53,7 @@ export function syncHeatmap(
         ],
         'heatmap-intensity': 1,
         'heatmap-radius': 40,
-        'heatmap-opacity': 0.8,
+        'heatmap-opacity': opacity,
         'heatmap-color': [
           'interpolate',
           ['linear'],
